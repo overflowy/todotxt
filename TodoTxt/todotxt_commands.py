@@ -5,7 +5,7 @@ import sublime
 import sublime_plugin
 
 
-class TodoTxtCompleteTaskCommand(sublime_plugin.TextCommand):
+class TodoTxtToggleTaskCompletionCommand(sublime_plugin.TextCommand):
     """Toggle task completion: mark complete or uncomplete"""
 
     def run(self, edit):

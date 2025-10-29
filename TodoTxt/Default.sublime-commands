@@ -1,7 +1,7 @@
 [
   {
-    "caption": "TodoTxt: Complete Task",
-    "command": "todo_txt_complete_task"
+    "caption": "TodoTxt: Toggle Task Completion",
+    "command": "todo_txt_toggle_task_completion"
   },
   {
     "caption": "TodoTxt: Sort by Context",
