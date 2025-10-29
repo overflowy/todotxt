@@ -298,3 +298,46 @@ class TodoTxtSortByCreationDateCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         """Only enable in todo.txt files"""
         return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtSortByStatusCommand(sublime_plugin.TextCommand):
+    """Sort tasks by status (incomplete first, completed last)"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Get all lines in the file
+        region = sublime.Region(0, view.size())
+        content = view.substr(region)
+        lines = content.split("\n")
+
+        # Sort lines by status
+        sorted_lines = self._sort_by_status(lines)
+
+        # Replace the entire content
+        view.replace(edit, region, "\n".join(sorted_lines))
+
+    def _sort_by_status(self, lines):
+        """Sort lines by their completion status"""
+        # Separate empty lines from task lines
+        tasks = []
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped:
+                is_completed = self._is_completed(stripped)
+                # Use 0 for incomplete, 1 for completed to sort incomplete first
+                tasks.append((1 if is_completed else 0, i, line))
+
+        # Sort by status (incomplete=0 first, completed=1 last), then by original order
+        tasks.sort(key=lambda x: (x[0], x[1]))
+
+        # Return sorted lines
+        return [task[2] for task in tasks]
+
+    def _is_completed(self, line):
+        """Check if a task is completed (starts with 'x ')"""
+        return line.startswith("x ")
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")

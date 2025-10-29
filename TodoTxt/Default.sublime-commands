@@ -22,5 +22,9 @@
   {
     "caption": "TodoTxt: Sort by Creation Date",
     "command": "todo_txt_sort_by_creation_date"
+  },
+  {
+    "caption": "TodoTxt: Sort by Status",
+    "command": "todo_txt_sort_by_status"
   }
 ]
