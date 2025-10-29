@@ -505,7 +505,7 @@ class TodoTxtArchiveCompletedCommand(sublime_plugin.TextCommand):
 
 
 class TodoTxtRemovePriorityCommand(sublime_plugin.TextCommand):
-    """Remove priority from selected tasks or task at cursor"""
+    """Remove priorities from selected tasks or task at cursor"""
 
     def run(self, edit):
         view = self.view

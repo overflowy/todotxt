@@ -8,7 +8,7 @@
     "command": "todo_txt_toggle_task_completion"
   },
   {
-    "caption": "TodoTxt: Remove Priority",
+    "caption": "TodoTxt: Remove Priorities",
     "command": "todo_txt_remove_priority"
   },
   {
