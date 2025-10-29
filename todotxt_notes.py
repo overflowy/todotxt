@@ -163,6 +163,8 @@ class TodoTxtNoteNavigator(sublime_plugin.EventListener):
 class TodoTxtNoteHighlighter(sublime_plugin.EventListener):
     """Highlight note: references"""
 
+    NOTE_PATTERN = r"\bnote:(\S+)"
+
     def on_modified_async(self, view):
         if view.match_selector(0, "text.todo"):
             self.highlight_notes(view)
@@ -173,16 +175,40 @@ class TodoTxtNoteHighlighter(sublime_plugin.EventListener):
 
     def highlight_notes(self, view):
         # Clear existing regions
-        view.erase_regions("note_references")
+        view.erase_regions("note_references_exists")
+        view.erase_regions("note_references_missing")
 
         # Find all note:path patterns
-        note_pattern = r"\bnote:\S+"
-        regions = view.find_all(note_pattern)
+        regions = view.find_all(self.NOTE_PATTERN)
 
-        # Highlight with underline
+        todo_file_dir = os.path.dirname(view.file_name())
+        existing_regions = []
+        missing_regions = []
+
+        for region in regions:
+            text = view.substr(region)
+            match = re.match(self.NOTE_PATTERN, text)
+            if match:
+                note_file = match.group(1)
+                full_path = os.path.normpath(os.path.join(todo_file_dir, note_file))
+
+                if os.path.exists(full_path):
+                    existing_regions.append(region)
+                else:
+                    missing_regions.append(region)
+
+        # Highlight existing notes with normal underline
         view.add_regions(
-            "note_references",
-            regions,
+            "note_references_exists",
+            existing_regions,
             scope="entity.name.filename.note.todo",
+            flags=sublime.DRAW_NO_FILL | sublime.DRAW_NO_OUTLINE | sublime.DRAW_SOLID_UNDERLINE,
+        )
+
+        # Highlight missing notes with red underline
+        view.add_regions(
+            "note_references_missing",
+            missing_regions,
+            scope="region.redish",
             flags=sublime.DRAW_NO_FILL | sublime.DRAW_NO_OUTLINE | sublime.DRAW_SOLID_UNDERLINE,
         )
