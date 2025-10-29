@@ -8,6 +8,10 @@
     "command": "todo_txt_toggle_task_completion"
   },
   {
+    "caption": "TodoTxt: Remove Priority",
+    "command": "todo_txt_remove_priority"
+  },
+  {
     "caption": "TodoTxt: Sort by Context",
     "command": "todo_txt_sort_by_context"
   },
@@ -36,15 +40,15 @@
     "command": "todo_txt_archive_completed"
   },
   {
-    "caption": "TodoTxt: Remove Priority",
-    "command": "todo_txt_remove_priority"
-  },
-  {
     "caption": "TodoTxt: Move to Someday",
     "command": "todo_txt_move_to_someday"
   },
   {
     "caption": "TodoTxt: Move to Waiting",
     "command": "todo_txt_move_to_waiting"
+  },
+  {
+    "caption": "TodoTxt: Move to Todo",
+    "command": "todo_txt_move_to_todo"
   }
 ]
