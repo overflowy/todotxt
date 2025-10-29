@@ -86,7 +86,7 @@ class TodoTxtNoteNavigator(sublime_plugin.EventListener):
                     lines.append(line.rstrip("\n\r"))
             return "\n".join(lines) if lines else None
         except Exception as e:
-            return f"Error: {str(e)}"
+            return "Error: {0}".format(str(e))
 
     def _build_popup_html(self, note_info, content_preview):
         """Build the HTML for the popup"""
@@ -99,9 +99,11 @@ class TodoTxtNoteNavigator(sublime_plugin.EventListener):
         action_text = "Click to open" if exists else "Click to create"
 
         if not exists:
-            full_path = f"<span style='color: red;'>{html.escape(full_path)}</span><br>"
+            full_path = "<span style='color: red;'>{0}</span><br>".format(html.escape(full_path))
         else:
-            full_path = f"<span style='font-size: 0.9em; color: color(var(--foreground) alpha(0.7));'>{html.escape(full_path)}</span><br>"
+            full_path = "<span style='font-size: 0.9em; color: color(var(--foreground) alpha(0.7));'>{0}</span><br>".format(
+                html.escape(full_path)
+            )
 
         # Only show status if file doesn't exist
         status_html = ""
@@ -116,28 +118,32 @@ class TodoTxtNoteNavigator(sublime_plugin.EventListener):
                     </div>
                 """
             elif content_preview.startswith("Error:"):
-                content_html = f'<div style="margin-top: 20px; color: red; font-size: 0.9em;">{html.escape(content_preview)}</div>'
+                content_html = (
+                    '<div style="margin-top: 20px; color: red; font-size: 0.9em;">{0}</div>'.format(
+                        html.escape(content_preview)
+                    )
+                )
             else:
                 # Escape HTML and replace newlines with <br> for proper display
                 escaped_content = html.escape(content_preview).replace("\n", "<br>")
-                content_html = f"""
+                content_html = """
                     <div style="margin-top: 20px; overflow-y: auto; font-family: monospace;">
-                        <div style="font-size: 0.9em; white-space: pre-wrap; word-wrap: break-word;">{escaped_content}</div>
+                        <div style="font-size: 0.9em; white-space: pre-wrap; word-wrap: break-word;">{0}</div>
                     </div>
-                """
+                """.format(escaped_content)
 
-        return f"""
+        return """
         <body style="padding: 8px;">
             <div style="font-family: system;">
-                <strong>Note:</strong> {html.escape(note_file)}<br>
-                {status_html}
-                {full_path}
+                <strong>Note:</strong> {0}<br>
+                {1}
+                {2}
                 <br>
-                <a href="open">{action_text}</a>
-                {content_html}
+                <a href="open">{3}</a>
+                {4}
             </div>
         </body>
-        """
+        """.format(html.escape(note_file), status_html, full_path, action_text, content_html)
 
     def _show_note_popup(self, view, point, note_info):
         """Show the popup with note information and preview"""

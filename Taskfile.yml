@@ -5,8 +5,7 @@ version: '3'
 vars:
   PACKAGE_NAME: "TodoTxt"
   USER: "$(whoami)"
-  SUBLIME_PACKAGES_DIR: "/Users/{{.USER}}/Library/Application Support/Sublime Text/Packages/"
-  PACKAGE_DIR: "{{.SUBLIME_PACKAGES_DIR}}/{{.PACKAGE_NAME}}"
+  SUBLIME_PACKAGES_DIR: "/Users/{{.USER}}/Library/Application Support/Sublime Text/Packages"
 
 tasks:
   default:
@@ -17,9 +16,14 @@ tasks:
   install:
     desc: Install package
     cmds:
-      - cp -r "{{.PACKAGE_NAME}}" "{{.PACKAGE_DIR}}"
+      - cp -r "{{.PACKAGE_NAME}}" "{{.SUBLIME_PACKAGES_DIR}}/"
 
   remove:
     desc: Remove package
     cmds:
-      - rm -rf "{{.PACKAGE_DIR}}"
+      - rm -rf "{{.SUBLIME_PACKAGES_DIR}}/{{.PACKAGE_NAME}}"
+
+  open:
+    desc: Open package directory
+    cmds:
+      - open "{{.SUBLIME_PACKAGES_DIR}}/{{.PACKAGE_NAME}}"

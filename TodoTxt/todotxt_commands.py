@@ -29,7 +29,7 @@ class TodoTxtCompleteTaskCommand(sublime_plugin.TextCommand):
                 view.replace(edit, line, uncompleted)
             else:
                 # Add completion marker at the beginning of the line
-                completion_prefix = f"x {today} "
+                completion_prefix = "x {0} ".format(today)
                 view.insert(edit, line.begin(), completion_prefix)
 
     def is_enabled(self):
