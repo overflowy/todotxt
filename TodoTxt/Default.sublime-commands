@@ -14,5 +14,9 @@
   {
     "caption": "TodoTxt: Sort by Due Date",
     "command": "todo_txt_sort_by_due_date"
+  },
+  {
+    "caption": "TodoTxt: Sort by Priority",
+    "command": "todo_txt_sort_by_priority"
   }
 ]

@@ -173,3 +173,51 @@ class TodoTxtSortByDueDateCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         """Only enable in todo.txt files"""
         return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtSortByPriorityCommand(sublime_plugin.TextCommand):
+    """Sort tasks by priority (A) through (Z)"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Get all lines in the file
+        region = sublime.Region(0, view.size())
+        content = view.substr(region)
+        lines = content.split("\n")
+
+        # Sort lines by priority
+        sorted_lines = self._sort_by_priority(lines)
+
+        # Replace the entire content
+        view.replace(edit, region, "\n".join(sorted_lines))
+
+    def _sort_by_priority(self, lines):
+        """Sort lines by their priority"""
+        # Separate empty lines from task lines
+        tasks = []
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped:
+                priority = self._extract_priority(stripped)
+                tasks.append((priority, i, line))
+
+        # Sort by priority (None/no priority last), then by original order
+        # Priority A comes before B, etc. Tasks without priority go to the end
+        tasks.sort(key=lambda x: (x[0] if x[0] is not None else "ZZZ", x[1]))
+
+        # Return sorted lines
+        return [task[2] for task in tasks]
+
+    def _extract_priority(self, line):
+        """Extract the priority (A) through (Z) from a line, or None if none"""
+        # Priority format in todo.txt: (A) at the beginning of the line
+        # Can be after completion marker: x 2025-10-29 (A) task
+        match = re.match(r"^(?:x\s+\d{4}-\d{2}-\d{2}\s+)?\(([A-Z])\)\s+", line)
+        if match:
+            return match.group(1)
+        return None
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")
