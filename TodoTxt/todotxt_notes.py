@@ -179,6 +179,10 @@ class TodoTxtNoteHighlighter(sublime_plugin.EventListener):
         if view.match_selector(0, "text.todo"):
             self.highlight_notes(view)
 
+    def on_activated_async(self, view):
+        if view.match_selector(0, "text.todo"):
+            self.highlight_notes(view)
+
     def highlight_notes(self, view):
         # Clear existing regions
         view.erase_regions("note_references_exists")

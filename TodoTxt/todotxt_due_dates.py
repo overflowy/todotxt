@@ -16,6 +16,10 @@ class TodoTxtDueDateHighlighter(sublime_plugin.EventListener):
         if view.match_selector(0, "text.todo"):
             self.highlight_due_dates(view)
 
+    def on_activated_async(self, view):
+        if view.match_selector(0, "text.todo"):
+            self.highlight_due_dates(view)
+
     def highlight_due_dates(self, view):
         # Clear existing regions
         view.erase_regions("due_date_past")
