@@ -38,5 +38,9 @@
   {
     "caption": "TodoTxt: Move to Someday",
     "command": "todo_txt_move_to_someday"
+  },
+  {
+    "caption": "TodoTxt: Move to Waiting",
+    "command": "todo_txt_move_to_waiting"
   }
 ]

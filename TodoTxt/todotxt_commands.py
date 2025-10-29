@@ -6,6 +6,7 @@ import sublime
 import sublime_plugin
 
 DONE_FILE = "done.txt"
+WAITING_FILE = "waiting.txt"
 SOMEDAY_FILE = "someday.txt"
 
 
@@ -527,6 +528,76 @@ class TodoTxtMoveToSomedayCommand(sublime_plugin.TextCommand):
         task_word = "task" if task_count == 1 else "tasks"
         sublime.status_message(
             "TodoTxt: Moved {0} {1} to {2}".format(task_count, task_word, SOMEDAY_FILE)
+        )
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtMoveToWaitingCommand(sublime_plugin.TextCommand):
+    """Move selected tasks to WAITING_FILE"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Get the todo.txt file path
+        todo_file = view.file_name()
+        if not todo_file:
+            sublime.status_message("TodoTxt: Please save the file first")
+            return
+
+        # Get the WAITING_FILE path (same directory as todo.txt)
+        todo_dir = os.path.dirname(todo_file)
+        waiting_file = os.path.join(todo_dir, WAITING_FILE)
+
+        # Collect all lines that are selected
+        selected_lines = []
+        all_regions = []
+
+        for region in view.sel():
+            # If it's a single cursor (empty selection), process the line at cursor
+            if region.empty():
+                lines = [view.line(region)]
+            else:
+                # For selections, process all lines that intersect with the selection
+                lines = view.lines(region)
+
+            for line in lines:
+                line_text = view.substr(line).strip()
+                if line_text:  # Only add non-empty lines
+                    selected_lines.append(line_text)
+                    all_regions.append(line)
+
+        # If no tasks selected, show message and return
+        if not selected_lines:
+            sublime.status_message("TodoTxt: No tasks selected to move")
+            return
+
+        # Append selected tasks to WAITING_FILE
+        try:
+            with open(waiting_file, "a", encoding="utf-8") as f:
+                if needs_newline(waiting_file):
+                    f.write("\n")
+                for task in selected_lines:
+                    f.write(task + "\n")
+        except Exception as e:
+            sublime.status_message(
+                "TodoTxt: Error writing to {0} - {1}".format(WAITING_FILE, str(e))
+            )
+            return
+
+        # Remove selected lines from the current file (in reverse order)
+        for line in reversed(all_regions):
+            # Get the full line region including the newline
+            full_line = view.full_line(line)
+            view.erase(edit, full_line)
+
+        # Show success message
+        task_count = len(selected_lines)
+        task_word = "task" if task_count == 1 else "tasks"
+        sublime.status_message(
+            "TodoTxt: Moved {0} {1} to {2}".format(task_count, task_word, WAITING_FILE)
         )
 
     def is_enabled(self):
