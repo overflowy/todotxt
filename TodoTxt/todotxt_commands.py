@@ -537,6 +537,105 @@ class TodoTxtRemovePriorityCommand(sublime_plugin.TextCommand):
         return self.view.match_selector(0, "text.todo")
 
 
+class TodoTxtIncreasePriorityCommand(sublime_plugin.TextCommand):
+    """Increase priority of selected tasks (A becomes higher priority, add A if none)"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Process each selection/cursor (in reverse to handle replacements correctly)
+        for region in reversed(view.sel()):
+            # If it's a single cursor (empty selection), process the line at cursor
+            if region.empty():
+                lines_to_process = [view.line(region)]
+            else:
+                # For selections, process all lines that intersect with the selection
+                lines_to_process = view.lines(region)
+
+            # Process each line (in reverse to handle replacements correctly)
+            for line in reversed(lines_to_process):
+                line_text = view.substr(line)
+
+                # Check if task has a priority
+                # Pattern: (A) at the beginning or after completion marker
+                match = re.match(r"^((?:x\s+\d{4}-\d{2}-\d{2}\s+)?)\(([A-Z])\)\s+(.*)$", line_text)
+
+                if match:
+                    # Task has priority, increase it (A is highest, Z is lowest)
+                    prefix = match.group(1)
+                    current_priority = match.group(2)
+                    rest = match.group(3)
+
+                    if current_priority > "A":
+                        # Increase priority (B -> A, C -> B, etc.)
+                        new_priority = chr(ord(current_priority) - 1)
+                        new_text = "{0}({1}) {2}".format(prefix, new_priority, rest)
+                        view.replace(edit, line, new_text)
+                else:
+                    # No priority, add (A) priority
+                    # Check if it's a completed task or has creation date
+                    completion_match = re.match(r"^(x\s+\d{4}-\d{2}-\d{2}\s+)", line_text)
+                    if completion_match:
+                        # Completed task: x 2025-10-29 (A) task
+                        prefix = completion_match.group(1)
+                        rest = line_text[len(prefix) :]
+                        new_text = "{0}(A) {1}".format(prefix, rest)
+                    else:
+                        # Regular task or task with creation date
+                        new_text = "(A) {0}".format(line_text)
+
+                    view.replace(edit, line, new_text)
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtDecreasePriorityCommand(sublime_plugin.TextCommand):
+    """Decrease priority of selected tasks (A becomes B, Z removes priority)"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Process each selection/cursor (in reverse to handle replacements correctly)
+        for region in reversed(view.sel()):
+            # If it's a single cursor (empty selection), process the line at cursor
+            if region.empty():
+                lines_to_process = [view.line(region)]
+            else:
+                # For selections, process all lines that intersect with the selection
+                lines_to_process = view.lines(region)
+
+            # Process each line (in reverse to handle replacements correctly)
+            for line in reversed(lines_to_process):
+                line_text = view.substr(line)
+
+                # Check if task has a priority
+                # Pattern: (A) at the beginning or after completion marker
+                match = re.match(r"^((?:x\s+\d{4}-\d{2}-\d{2}\s+)?)\(([A-Z])\)\s+(.*)$", line_text)
+
+                if match:
+                    # Task has priority, decrease it (A -> B, B -> C, etc.)
+                    prefix = match.group(1)
+                    current_priority = match.group(2)
+                    rest = match.group(3)
+
+                    if current_priority < "Z":
+                        # Decrease priority (A -> B, B -> C, etc.)
+                        new_priority = chr(ord(current_priority) + 1)
+                        new_text = "{0}({1}) {2}".format(prefix, new_priority, rest)
+                    else:
+                        # Priority is Z, remove it
+                        new_text = "{0}{1}".format(prefix, rest)
+
+                    view.replace(edit, line, new_text)
+                # If no priority, do nothing
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")
+
+
 class TodoTxtMoveToSomedayCommand(sublime_plugin.TextCommand):
     """Move selected tasks to SOMEDAY_FILE"""
 

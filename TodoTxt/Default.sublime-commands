@@ -12,6 +12,14 @@
     "command": "todo_txt_remove_priority"
   },
   {
+    "caption": "TodoTxt: Increase Priority",
+    "command": "todo_txt_increase_priority"
+  },
+  {
+    "caption": "TodoTxt: Decrease Priority",
+    "command": "todo_txt_decrease_priority"
+  },
+  {
     "caption": "TodoTxt: Sort by Context",
     "command": "todo_txt_sort_by_context"
   },
