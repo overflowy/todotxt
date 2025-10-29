@@ -3,15 +3,10 @@
 version: '3'
 
 vars:
+  PACKAGE_NAME: "TodoTxt"
   USER: "$(whoami)"
-  SUBLIME_USER_DATA: "/Users/{{.USER}}/Library/Application Support/Sublime Text/Packages/User/"
-  SYNTAX_FILE: "TodoTxt.sublime-syntax"
-  SETTINGS_FILE: "TodoTxt.sublime-settings"
-  AUTOCOMPLETE_FILE: "todotxt_autocomplete.py"
-  COMMANDS_FILE: "todotxt_commands.py"
-  DUE_DATES_FILE: "todotxt_due_dates.py"
-  NOTES_FILE: "todotxt_notes.py"
-  SUBLIME_COMMANDS_FILE: "Default.sublime-commands"
+  SUBLIME_PACKAGES_DIR: "/Users/{{.USER}}/Library/Application Support/Sublime Text/Packages/"
+  PACKAGE_DIR: "{{.SUBLIME_PACKAGES_DIR}}/{{.PACKAGE_NAME}}"
 
 tasks:
   default:
@@ -20,17 +15,11 @@ tasks:
     silent: true
 
   install:
-    desc: Install all files
+    desc: Install package
     cmds:
-      - cp {{.SYNTAX_FILE}} "{{.SUBLIME_USER_DATA}}/{{.SYNTAX_FILE}}"
-      - cp {{.SETTINGS_FILE}} "{{.SUBLIME_USER_DATA}}/{{.SETTINGS_FILE}}"
-      - cp {{.AUTOCOMPLETE_FILE}} "{{.SUBLIME_USER_DATA}}/{{.AUTOCOMPLETE_FILE}}"
-      - cp {{.COMMANDS_FILE}} "{{.SUBLIME_USER_DATA}}/{{.COMMANDS_FILE}}"
-      - cp {{.DUE_DATES_FILE}} "{{.SUBLIME_USER_DATA}}/{{.DUE_DATES_FILE}}"
-      - cp {{.NOTES_FILE}} "{{.SUBLIME_USER_DATA}}/{{.NOTES_FILE}}"
-      - cp {{.SUBLIME_COMMANDS_FILE}} "{{.SUBLIME_USER_DATA}}/{{.SUBLIME_COMMANDS_FILE}}"
+      - cp -r "{{.PACKAGE_NAME}}" "{{.PACKAGE_DIR}}"
 
-  open:
-    desc: Open the Sublime Text user data directory
+  remove:
+    desc: Remove package
     cmds:
-      - open "{{.SUBLIME_USER_DATA}}"
+      - rm -rf "{{.PACKAGE_DIR}}"
