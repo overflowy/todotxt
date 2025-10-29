@@ -35,3 +35,46 @@ class TodoTxtCompleteTaskCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         """Only enable in todo.txt files"""
         return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtSortByContextCommand(sublime_plugin.TextCommand):
+    """Sort tasks by context (@word)"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Get all lines in the file
+        region = sublime.Region(0, view.size())
+        content = view.substr(region)
+        lines = content.split("\n")
+
+        # Sort lines by context
+        sorted_lines = self._sort_by_context(lines)
+
+        # Replace the entire content
+        view.replace(edit, region, "\n".join(sorted_lines))
+
+    def _sort_by_context(self, lines):
+        """Sort lines by their context, preserving empty lines"""
+        # Separate empty lines from task lines
+        tasks = []
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped:
+                context = self._extract_context(stripped)
+                tasks.append((context, i, line))
+
+        # Sort by context (case-insensitive), then by original order
+        tasks.sort(key=lambda x: (x[0].lower(), x[1]))
+
+        # Return sorted lines
+        return [task[2] for task in tasks]
+
+    def _extract_context(self, line):
+        """Extract the first context (@word) from a line, or empty string if none"""
+        match = re.search(r"\s@(\S+)", line)
+        return match.group(1) if match else ""
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")

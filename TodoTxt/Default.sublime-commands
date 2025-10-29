@@ -2,5 +2,9 @@
   {
     "caption": "TodoTxt: Complete Task",
     "command": "todo_txt_complete_task"
+  },
+  {
+    "caption": "TodoTxt: Sort by Context",
+    "command": "todo_txt_sort_by_context"
   }
 ]
