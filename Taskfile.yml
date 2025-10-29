@@ -9,6 +9,7 @@ vars:
   SETTINGS_FILE: "TodoTxt.sublime-settings"
   AUTOCOMPLETE_FILE: "todotxt_autocomplete.py"
   COMMANDS_FILE: "todotxt_commands.py"
+  DUE_DATES_FILE: "todotxt_due_dates.py"
   SUBLIME_COMMANDS_FILE: "Default.sublime-commands"
 
 tasks:
@@ -24,6 +25,7 @@ tasks:
       - cp {{.SETTINGS_FILE}} "{{.SUBLIME_USER_DATA}}/{{.SETTINGS_FILE}}"
       - cp {{.AUTOCOMPLETE_FILE}} "{{.SUBLIME_USER_DATA}}/{{.AUTOCOMPLETE_FILE}}"
       - cp {{.COMMANDS_FILE}} "{{.SUBLIME_USER_DATA}}/{{.COMMANDS_FILE}}"
+      - cp {{.DUE_DATES_FILE}} "{{.SUBLIME_USER_DATA}}/{{.DUE_DATES_FILE}}"
       - cp {{.SUBLIME_COMMANDS_FILE}} "{{.SUBLIME_USER_DATA}}/{{.SUBLIME_COMMANDS_FILE}}"
 
   open:

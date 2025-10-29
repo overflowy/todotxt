@@ -25,6 +25,8 @@ contexts:
       scope: string.quoted.project.todo
     - match: "{{context}}"
       scope: entity.name.tag.context.todo
+    - match: '\bdue:{{date}}\b'
+      scope: keyword.control.due.todo
     - match: '\b{{date}}\b'
       scope: constant.numeric.date.todo
     - match: "{{metadata}}"
