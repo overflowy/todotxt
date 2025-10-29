@@ -694,6 +694,9 @@ class TodoTxtMoveToSomedayCommand(sublime_plugin.TextCommand):
             full_line = view.full_line(line)
             view.erase(edit, full_line)
 
+        # Save the current file
+        view.run_command("save")
+
         # Show success message
         task_count = len(selected_lines)
         task_word = "task" if task_count == 1 else "tasks"
@@ -764,6 +767,9 @@ class TodoTxtMoveToWaitingCommand(sublime_plugin.TextCommand):
             full_line = view.full_line(line)
             view.erase(edit, full_line)
 
+        # Save the current file
+        view.run_command("save")
+
         # Show success message
         task_count = len(selected_lines)
         task_word = "task" if task_count == 1 else "tasks"
@@ -831,6 +837,9 @@ class TodoTxtMoveToTodoCommand(sublime_plugin.TextCommand):
             # Get the full line region including the newline
             full_line = view.full_line(line)
             view.erase(edit, full_line)
+
+        # Save the current file
+        view.run_command("save")
 
         # Show success message
         task_count = len(selected_lines)
