@@ -121,3 +121,55 @@ class TodoTxtSortByProjectCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         """Only enable in todo.txt files"""
         return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtSortByDueDateCommand(sublime_plugin.TextCommand):
+    """Sort tasks by due date (due:YYYY-MM-DD)"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Get all lines in the file
+        region = sublime.Region(0, view.size())
+        content = view.substr(region)
+        lines = content.split("\n")
+
+        # Sort lines by due date
+        sorted_lines = self._sort_by_due_date(lines)
+
+        # Replace the entire content
+        view.replace(edit, region, "\n".join(sorted_lines))
+
+    def _sort_by_due_date(self, lines):
+        """Sort lines by their due date"""
+        # Separate empty lines from task lines
+        tasks = []
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped:
+                due_date = self._extract_due_date(stripped)
+                tasks.append((due_date, i, line))
+
+        # Sort by due date (None/invalid dates last), then by original order
+        # Use a tuple where None becomes a far future date for sorting
+        tasks.sort(key=lambda x: (x[0] if x[0] is not None else "9999-99-99", x[1]))
+
+        # Return sorted lines
+        return [task[2] for task in tasks]
+
+    def _extract_due_date(self, line):
+        """Extract the due date (due:YYYY-MM-DD) from a line, or None if none"""
+        match = re.search(r"\bdue:(\d{4}-\d{2}-\d{2})\b", line)
+        if match:
+            date_str = match.group(1)
+            # Validate the date format
+            try:
+                datetime.strptime(date_str, "%Y-%m-%d")
+                return date_str
+            except ValueError:
+                return None
+        return None
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")

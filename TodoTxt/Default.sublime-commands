@@ -10,5 +10,9 @@
   {
     "caption": "TodoTxt: Sort by Project",
     "command": "todo_txt_sort_by_project"
+  },
+  {
+    "caption": "TodoTxt: Sort by Due Date",
+    "command": "todo_txt_sort_by_due_date"
   }
 ]
