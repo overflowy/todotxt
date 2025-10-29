@@ -26,5 +26,9 @@
   {
     "caption": "TodoTxt: Sort by Status",
     "command": "todo_txt_sort_by_status"
+  },
+  {
+    "caption": "TodoTxt: Archive Completed Tasks",
+    "command": "todo_txt_archive_completed"
   }
 ]

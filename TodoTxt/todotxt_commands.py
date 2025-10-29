@@ -1,3 +1,4 @@
+import os
 import re
 from datetime import datetime
 
@@ -337,6 +338,80 @@ class TodoTxtSortByStatusCommand(sublime_plugin.TextCommand):
     def _is_completed(self, line):
         """Check if a task is completed (starts with 'x ')"""
         return line.startswith("x ")
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtArchiveCompletedCommand(sublime_plugin.TextCommand):
+    """Archive completed tasks to done.txt"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Get the todo.txt file path
+        todo_file = view.file_name()
+        if not todo_file:
+            sublime.status_message("TodoTxt: Please save the file first")
+            return
+
+        # Get the done.txt path (same directory as todo.txt)
+        todo_dir = os.path.dirname(todo_file)
+        done_file = os.path.join(todo_dir, "done.txt")
+
+        # Get all lines in the file
+        region = sublime.Region(0, view.size())
+        content = view.substr(region)
+        lines = content.split("\n")
+
+        # Separate completed and incomplete tasks
+        completed_tasks = []
+        incomplete_tasks = []
+
+        for line in lines:
+            stripped = line.strip()
+            if stripped:
+                if stripped.startswith("x "):
+                    completed_tasks.append(line)
+                else:
+                    incomplete_tasks.append(line)
+
+        # If no completed tasks, show message and return
+        if not completed_tasks:
+            sublime.status_message("TodoTxt: No completed tasks to archive")
+            return
+
+        # Append completed tasks to done.txt
+        try:
+            # Check if we need to add a newline first
+            needs_newline = False
+            if os.path.exists(done_file) and os.path.getsize(done_file) > 0:
+                with open(done_file, "rb") as f:
+                    # Seek to the last byte
+                    f.seek(-1, os.SEEK_END)
+                    last_char = f.read(1)
+                    # Check if last character is not a newline
+                    needs_newline = last_char not in (b"\n", b"\r")
+
+            with open(done_file, "a", encoding="utf-8") as f:
+                if needs_newline:
+                    f.write("\n")
+                for task in completed_tasks:
+                    f.write(task + "\n")
+        except Exception as e:
+            sublime.status_message("TodoTxt: Error writing to done.txt - {0}".format(str(e)))
+            return
+
+        # Replace the current file content with only incomplete tasks
+        view.replace(edit, region, "\n".join(incomplete_tasks))
+
+        # Show success message
+        task_count = len(completed_tasks)
+        task_word = "task" if task_count == 1 else "tasks"
+        sublime.status_message(
+            "TodoTxt: Archived {0} {1} to done.txt".format(task_count, task_word)
+        )
 
     def is_enabled(self):
         """Only enable in todo.txt files"""
