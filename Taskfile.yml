@@ -6,6 +6,8 @@ vars:
   USER: "$(whoami)"
   SUBLIME_USER_DATA: "/Users/{{.USER}}/Library/Application Support/Sublime Text/Packages/User/"
   SYNTAX_FILE: "TodoTxt.sublime-syntax"
+  SETTINGS_FILE: "TodoTxt.sublime-settings"
+  PLUGIN_FILE: "todotxt_autocomplete.py"
 
 tasks:
   default:
@@ -14,6 +16,13 @@ tasks:
     silent: true
 
   install:
-    desc: Install TodoTxt syntax and mousemap
+    desc: Install all files
     cmds:
       - cp {{.SYNTAX_FILE}} "{{.SUBLIME_USER_DATA}}/{{.SYNTAX_FILE}}"
+      - cp {{.SETTINGS_FILE}} "{{.SUBLIME_USER_DATA}}/{{.SETTINGS_FILE}}"
+      - cp {{.PLUGIN_FILE}} "{{.SUBLIME_USER_DATA}}/{{.PLUGIN_FILE}}"
+
+  open:
+    desc: Open the Sublime Text user data directory
+    cmds:
+      - open "{{.SUBLIME_USER_DATA}}"
