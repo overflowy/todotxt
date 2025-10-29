@@ -27,6 +27,8 @@ contexts:
       scope: entity.name.tag.context.todo
     - match: '\bdue:{{date}}\b'
       scope: keyword.control.due.todo
+    - match: '\bnote:\S+'
+      scope: entity.name.filename.note.todo
     - match: '\b{{date}}\b'
       scope: constant.numeric.date.todo
     - match: "{{metadata}}"
