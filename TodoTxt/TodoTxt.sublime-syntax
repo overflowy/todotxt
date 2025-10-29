@@ -4,6 +4,8 @@ name: Todo.txt
 file_extensions:
   - todo.txt
   - done.txt
+  - someday.txt
+  - waiting.txt
 scope: text.todo
 version: 2
 
