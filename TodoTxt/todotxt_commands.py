@@ -5,6 +5,8 @@ from datetime import datetime
 import sublime
 import sublime_plugin
 
+DONE_FILE = "done.txt"
+
 
 class TodoTxtToggleTaskCompletionCommand(sublime_plugin.TextCommand):
     """Toggle task completion: mark complete or uncomplete"""
@@ -345,7 +347,7 @@ class TodoTxtSortByStatusCommand(sublime_plugin.TextCommand):
 
 
 class TodoTxtArchiveCompletedCommand(sublime_plugin.TextCommand):
-    """Archive completed tasks to done.txt"""
+    """Archive completed tasks to DONE_FILE"""
 
     def run(self, edit):
         view = self.view
@@ -356,9 +358,9 @@ class TodoTxtArchiveCompletedCommand(sublime_plugin.TextCommand):
             sublime.status_message("TodoTxt: Please save the file first")
             return
 
-        # Get the done.txt path (same directory as todo.txt)
+        # Get the DONE_FILE path (same directory as todo.txt)
         todo_dir = os.path.dirname(todo_file)
-        done_file = os.path.join(todo_dir, "done.txt")
+        done_file = os.path.join(todo_dir, DONE_FILE)
 
         # Get all lines in the file
         region = sublime.Region(0, view.size())
@@ -382,7 +384,7 @@ class TodoTxtArchiveCompletedCommand(sublime_plugin.TextCommand):
             sublime.status_message("TodoTxt: No completed tasks to archive")
             return
 
-        # Append completed tasks to done.txt
+        # Append completed tasks to DONE_FILE
         try:
             # Check if we need to add a newline first
             needs_newline = False
@@ -400,7 +402,7 @@ class TodoTxtArchiveCompletedCommand(sublime_plugin.TextCommand):
                 for task in completed_tasks:
                     f.write(task + "\n")
         except Exception as e:
-            sublime.status_message("TodoTxt: Error writing to done.txt - {0}".format(str(e)))
+            sublime.status_message("TodoTxt: Error writing to {0} - {1}".format(DONE_FILE, str(e)))
             return
 
         # Replace the current file content with only incomplete tasks
@@ -410,7 +412,7 @@ class TodoTxtArchiveCompletedCommand(sublime_plugin.TextCommand):
         task_count = len(completed_tasks)
         task_word = "task" if task_count == 1 else "tasks"
         sublime.status_message(
-            "TodoTxt: Archived {0} {1} to done.txt".format(task_count, task_word)
+            "TodoTxt: Archived {0} {1} to {2}".format(task_count, task_word, DONE_FILE)
         )
 
     def is_enabled(self):
