@@ -1,0 +1,19 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  USER: "$(whoami)"
+  SUBLIME_USER_DATA: "/Users/{{.USER}}/Library/Application Support/Sublime Text/Packages/User/"
+  SYNTAX_FILE: "TodoTxt.sublime-syntax"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  install:
+    desc: Install TodoTxt syntax and mousemap
+    cmds:
+      - cp {{.SYNTAX_FILE}} "{{.SUBLIME_USER_DATA}}/{{.SYNTAX_FILE}}"

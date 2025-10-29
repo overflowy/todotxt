@@ -1,0 +1,47 @@
+%YAML 1.2
+---
+name: Todo.txt
+file_extensions:
+  - todo.txt
+  - done.txt
+scope: text.todo
+version: 2
+
+variables:
+  date: '\d{4}-\d{2}-\d{2}'
+  priority: '\([A-Z]\)'
+  project: '\+\w+'
+  context: '@\w+'
+  url: 'https?://[^\s]+'
+  metadata: '\w+:\S+'
+
+contexts:
+  prototype:
+    - match: '\b({{url}})'
+      scope: markup.underline.link.todo
+      captures:
+        1: string.other.link.todo
+    - match: "{{project}}"
+      scope: string.quoted.project.todo
+    - match: "{{context}}"
+      scope: entity.name.tag.context.todo
+    - match: '\b{{date}}\b'
+      scope: constant.numeric.date.todo
+    - match: "{{metadata}}"
+      scope: variable.parameter.metadata.todo
+
+  main:
+    - match: '^x\s.*$'
+      scope: comment.line.completed.todo
+
+    - match: '^({{priority}})\s+'
+      captures:
+        1: invalid.deprecated.todo
+      push: task-body
+
+    - match: '^(?=\S)'
+      push: task-body
+
+  task-body:
+    - match: "$"
+      pop: true
