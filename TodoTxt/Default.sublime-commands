@@ -6,5 +6,9 @@
   {
     "caption": "TodoTxt: Sort by Context",
     "command": "todo_txt_sort_by_context"
+  },
+  {
+    "caption": "TodoTxt: Sort by Project",
+    "command": "todo_txt_sort_by_project"
   }
 ]

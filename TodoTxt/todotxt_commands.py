@@ -78,3 +78,46 @@ class TodoTxtSortByContextCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         """Only enable in todo.txt files"""
         return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtSortByProjectCommand(sublime_plugin.TextCommand):
+    """Sort tasks by project (+word)"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Get all lines in the file
+        region = sublime.Region(0, view.size())
+        content = view.substr(region)
+        lines = content.split("\n")
+
+        # Sort lines by project
+        sorted_lines = self._sort_by_project(lines)
+
+        # Replace the entire content
+        view.replace(edit, region, "\n".join(sorted_lines))
+
+    def _sort_by_project(self, lines):
+        """Sort lines by their project, preserving empty lines"""
+        # Separate empty lines from task lines
+        tasks = []
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped:
+                project = self._extract_project(stripped)
+                tasks.append((project, i, line))
+
+        # Sort by project (case-insensitive), then by original order
+        tasks.sort(key=lambda x: (x[0].lower(), x[1]))
+
+        # Return sorted lines
+        return [task[2] for task in tasks]
+
+    def _extract_project(self, line):
+        """Extract the first project (+word) from a line, or empty string if none"""
+        match = re.search(r"\s\+(\S+)", line)
+        return match.group(1) if match else ""
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")
