@@ -17,23 +17,30 @@ class TodoTxtToggleTaskCompletionCommand(sublime_plugin.TextCommand):
         # Get current date
         today = datetime.now().strftime("%Y-%m-%d")
 
-        # Process each selection/cursor
-        for region in view.sel():
-            # Get the line containing the cursor
-            line = view.line(region)
-            line_text = view.substr(line)
-            stripped = line_text.lstrip()
-
-            # If already completed, uncomplete it
-            if stripped.startswith("x "):
-                # Remove "x YYYY-MM-DD " from the beginning
-                # Match "x " followed by optional date and space
-                uncompleted = re.sub(r"^(\s*)x\s+(?:\d{4}-\d{2}-\d{2}\s+)?", r"\1", line_text)
-                view.replace(edit, line, uncompleted)
+        # Process each selection/cursor (in reverse to handle insertions correctly)
+        for region in reversed(view.sel()):
+            # If it's a single cursor (empty selection), process the line at cursor
+            if region.empty():
+                lines_to_process = [view.line(region)]
             else:
-                # Add completion marker at the beginning of the line
-                completion_prefix = "x {0} ".format(today)
-                view.insert(edit, line.begin(), completion_prefix)
+                # For selections, process all lines that intersect with the selection
+                lines_to_process = view.lines(region)
+
+            # Process each line (in reverse to handle insertions correctly)
+            for line in reversed(lines_to_process):
+                line_text = view.substr(line)
+                stripped = line_text.lstrip()
+
+                # If already completed, uncomplete it
+                if stripped.startswith("x "):
+                    # Remove "x YYYY-MM-DD " from the beginning
+                    # Match "x " followed by optional date and space
+                    uncompleted = re.sub(r"^(\s*)x\s+(?:\d{4}-\d{2}-\d{2}\s+)?", r"\1", line_text)
+                    view.replace(edit, line, uncompleted)
+                else:
+                    # Add completion marker at the beginning of the line
+                    completion_prefix = "x {0} ".format(today)
+                    view.insert(edit, line.begin(), completion_prefix)
 
     def is_enabled(self):
         """Only enable in todo.txt files"""
