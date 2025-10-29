@@ -425,3 +425,36 @@ class TodoTxtArchiveCompletedCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         """Only enable in todo.txt files"""
         return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtRemovePriorityCommand(sublime_plugin.TextCommand):
+    """Remove priority from selected tasks or task at cursor"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Process each selection/cursor (in reverse to handle deletions correctly)
+        for region in reversed(view.sel()):
+            # If it's a single cursor (empty selection), process the line at cursor
+            if region.empty():
+                lines_to_process = [view.line(region)]
+            else:
+                # For selections, process all lines that intersect with the selection
+                lines_to_process = view.lines(region)
+
+            # Process each line (in reverse to handle deletions correctly)
+            for line in reversed(lines_to_process):
+                line_text = view.substr(line)
+
+                # Remove priority if it exists
+                # Priority format: (A) at the beginning or after completion marker
+                # Patterns: "(A) task" or "x 2025-10-29 (A) task"
+                new_text = re.sub(r"^((?:x\s+\d{4}-\d{2}-\d{2}\s+)?)\([A-Z]\)\s+", r"\1", line_text)
+
+                # Only replace if something changed
+                if new_text != line_text:
+                    view.replace(edit, line, new_text)
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")
