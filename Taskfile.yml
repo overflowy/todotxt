@@ -7,7 +7,9 @@ vars:
   SUBLIME_USER_DATA: "/Users/{{.USER}}/Library/Application Support/Sublime Text/Packages/User/"
   SYNTAX_FILE: "TodoTxt.sublime-syntax"
   SETTINGS_FILE: "TodoTxt.sublime-settings"
-  PLUGIN_FILE: "todotxt_autocomplete.py"
+  AUTOCOMPLETE_FILE: "todotxt_autocomplete.py"
+  COMMANDS_FILE: "todotxt_commands.py"
+  SUBLIME_COMMANDS_FILE: "Default.sublime-commands"
 
 tasks:
   default:
@@ -20,7 +22,9 @@ tasks:
     cmds:
       - cp {{.SYNTAX_FILE}} "{{.SUBLIME_USER_DATA}}/{{.SYNTAX_FILE}}"
       - cp {{.SETTINGS_FILE}} "{{.SUBLIME_USER_DATA}}/{{.SETTINGS_FILE}}"
-      - cp {{.PLUGIN_FILE}} "{{.SUBLIME_USER_DATA}}/{{.PLUGIN_FILE}}"
+      - cp {{.AUTOCOMPLETE_FILE}} "{{.SUBLIME_USER_DATA}}/{{.AUTOCOMPLETE_FILE}}"
+      - cp {{.COMMANDS_FILE}} "{{.SUBLIME_USER_DATA}}/{{.COMMANDS_FILE}}"
+      - cp {{.SUBLIME_COMMANDS_FILE}} "{{.SUBLIME_USER_DATA}}/{{.SUBLIME_COMMANDS_FILE}}"
 
   open:
     desc: Open the Sublime Text user data directory

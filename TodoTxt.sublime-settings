@@ -1,9 +1,9 @@
 {
-    "auto_complete": true,
-    "auto_complete_triggers": [
-        {
-            "selector": "text.todo",
-            "characters": "@+"
-        }
-    ]
+  "auto_complete": true,
+  "auto_complete_triggers": [
+    {
+      "selector": "text.todo",
+      "characters": "@+"
+    }
+  ]
 }
