@@ -6,6 +6,20 @@ import sublime
 import sublime_plugin
 
 DONE_FILE = "done.txt"
+SOMEDAY_FILE = "someday.txt"
+
+
+def needs_newline(file_path):
+    """Check if a file needs a newline before appending content"""
+    if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+        return False
+
+    with open(file_path, "rb") as f:
+        # Seek to the last byte
+        f.seek(-1, os.SEEK_END)
+        last_char = f.read(1)
+        # Check if last character is not a newline
+        return last_char not in (b"\n", b"\r")
 
 
 class TodoTxtToggleTaskCompletionCommand(sublime_plugin.TextCommand):
@@ -393,18 +407,8 @@ class TodoTxtArchiveCompletedCommand(sublime_plugin.TextCommand):
 
         # Append completed tasks to DONE_FILE
         try:
-            # Check if we need to add a newline first
-            needs_newline = False
-            if os.path.exists(done_file) and os.path.getsize(done_file) > 0:
-                with open(done_file, "rb") as f:
-                    # Seek to the last byte
-                    f.seek(-1, os.SEEK_END)
-                    last_char = f.read(1)
-                    # Check if last character is not a newline
-                    needs_newline = last_char not in (b"\n", b"\r")
-
             with open(done_file, "a", encoding="utf-8") as f:
-                if needs_newline:
+                if needs_newline(done_file):
                     f.write("\n")
                 for task in completed_tasks:
                     f.write(task + "\n")
@@ -454,6 +458,76 @@ class TodoTxtRemovePriorityCommand(sublime_plugin.TextCommand):
                 # Only replace if something changed
                 if new_text != line_text:
                     view.replace(edit, line, new_text)
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtMoveToSomedayCommand(sublime_plugin.TextCommand):
+    """Move selected tasks to SOMEDAY_FILE"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Get the todo.txt file path
+        todo_file = view.file_name()
+        if not todo_file:
+            sublime.status_message("TodoTxt: Please save the file first")
+            return
+
+        # Get the SOMEDAY_FILE path (same directory as todo.txt)
+        todo_dir = os.path.dirname(todo_file)
+        someday_file = os.path.join(todo_dir, SOMEDAY_FILE)
+
+        # Collect all lines that are selected
+        selected_lines = []
+        all_regions = []
+
+        for region in view.sel():
+            # If it's a single cursor (empty selection), process the line at cursor
+            if region.empty():
+                lines = [view.line(region)]
+            else:
+                # For selections, process all lines that intersect with the selection
+                lines = view.lines(region)
+
+            for line in lines:
+                line_text = view.substr(line).strip()
+                if line_text:  # Only add non-empty lines
+                    selected_lines.append(line_text)
+                    all_regions.append(line)
+
+        # If no tasks selected, show message and return
+        if not selected_lines:
+            sublime.status_message("TodoTxt: No tasks selected to move")
+            return
+
+        # Append selected tasks to SOMEDAY_FILE
+        try:
+            with open(someday_file, "a", encoding="utf-8") as f:
+                if needs_newline(someday_file):
+                    f.write("\n")
+                for task in selected_lines:
+                    f.write(task + "\n")
+        except Exception as e:
+            sublime.status_message(
+                "TodoTxt: Error writing to {0} - {1}".format(SOMEDAY_FILE, str(e))
+            )
+            return
+
+        # Remove selected lines from the current file (in reverse order)
+        for line in reversed(all_regions):
+            # Get the full line region including the newline
+            full_line = view.full_line(line)
+            view.erase(edit, full_line)
+
+        # Show success message
+        task_count = len(selected_lines)
+        task_word = "task" if task_count == 1 else "tasks"
+        sublime.status_message(
+            "TodoTxt: Moved {0} {1} to {2}".format(task_count, task_word, SOMEDAY_FILE)
+        )
 
     def is_enabled(self):
         """Only enable in todo.txt files"""

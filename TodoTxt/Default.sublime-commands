@@ -34,5 +34,9 @@
   {
     "caption": "TodoTxt: Remove Priority",
     "command": "todo_txt_remove_priority"
+  },
+  {
+    "caption": "TodoTxt: Move to Someday",
+    "command": "todo_txt_move_to_someday"
   }
 ]
