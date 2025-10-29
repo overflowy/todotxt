@@ -62,6 +62,78 @@ class TodoTxtToggleTaskCompletionCommand(sublime_plugin.TextCommand):
         return self.view.match_selector(0, "text.todo")
 
 
+class TodoTxtAddNewTaskCommand(sublime_plugin.TextCommand):
+    """Add a new task via input panel"""
+
+    def run(self, _edit):
+        view = self.view
+        window = view.window()
+
+        if not window:
+            return
+
+        # Show input panel to get the task text
+        window.show_input_panel(
+            "New Task:",  # Caption
+            "",  # Initial text
+            self.on_done,  # On done callback
+            None,  # On change callback
+            None,  # On cancel callback
+        )
+
+    def on_done(self, task_text):
+        """Called when user submits the input"""
+        task_text = task_text.strip()
+
+        if not task_text:
+            return
+
+        view = self.view
+
+        # Get current date for creation date
+        today = datetime.now().strftime("%Y-%m-%d")
+
+        # Format the task with creation date
+        new_task = "{0} {1}".format(today, task_text)
+
+        # Get the current cursor position (use first selection)
+        cursor_pos = view.sel()[0].end() if len(view.sel()) > 0 else view.size()
+
+        # Insert the task below the current line
+        view.run_command("todo_txt_insert_task", {"task": new_task, "position": cursor_pos})
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtInsertTaskCommand(sublime_plugin.TextCommand):
+    """Helper command to insert a task (needed for async callback)"""
+
+    def run(self, edit, task, position):
+        view = self.view
+
+        # Get the end of the current line
+        current_line = view.line(position)
+        insert_point = current_line.end()
+
+        # Build the new task with proper newlines
+        # Add newline before if we're inserting after existing content
+        if insert_point > 0:
+            new_task = "\n" + task
+        else:
+            new_task = task
+
+        # Insert the task
+        view.insert(edit, insert_point, new_task)
+
+        # Move cursor to the new task
+        new_line = view.line(insert_point + len(new_task) - len(task))
+        view.sel().clear()
+        view.sel().add(new_line.begin())
+        view.show(new_line)
+
+
 class TodoTxtSortByContextCommand(sublime_plugin.TextCommand):
     """Sort tasks by context (@word)"""
 

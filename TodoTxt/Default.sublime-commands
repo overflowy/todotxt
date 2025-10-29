@@ -1,5 +1,9 @@
 [
   {
+    "caption": "TodoTxt: Add New Task",
+    "command": "todo_txt_add_new_task"
+  },
+  {
     "caption": "TodoTxt: Toggle Task Completion",
     "command": "todo_txt_toggle_task_completion"
   },
