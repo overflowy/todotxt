@@ -221,3 +221,80 @@ class TodoTxtSortByPriorityCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         """Only enable in todo.txt files"""
         return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtSortByCreationDateCommand(sublime_plugin.TextCommand):
+    """Sort tasks by creation date (YYYY-MM-DD at start of task)"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Get all lines in the file
+        region = sublime.Region(0, view.size())
+        content = view.substr(region)
+        lines = content.split("\n")
+
+        # Sort lines by creation date
+        sorted_lines = self._sort_by_creation_date(lines)
+
+        # Replace the entire content
+        view.replace(edit, region, "\n".join(sorted_lines))
+
+    def _sort_by_creation_date(self, lines):
+        """Sort lines by their creation date"""
+        # Separate empty lines from task lines
+        tasks = []
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped:
+                creation_date = self._extract_creation_date(stripped)
+                tasks.append((creation_date, i, line))
+
+        # Sort by creation date (None/invalid dates last), then by original order
+        # Use a tuple where None becomes a far future date for sorting
+        tasks.sort(key=lambda x: (x[0] if x[0] is not None else "9999-99-99", x[1]))
+
+        # Return sorted lines
+        return [task[2] for task in tasks]
+
+    def _extract_creation_date(self, line):
+        """Extract the creation date from a line, or None if none"""
+        # Creation date formats in todo.txt:
+        # - (A) 2025-10-29 task (with priority)
+        # - 2025-10-29 task (without priority)
+        # - x 2025-10-29 2025-10-15 task (completed, completion date then creation date)
+
+        # Check for completed task: x YYYY-MM-DD YYYY-MM-DD
+        match = re.match(r"^x\s+\d{4}-\d{2}-\d{2}\s+(\d{4}-\d{2}-\d{2})\s+", line)
+        if match:
+            date_str = match.group(1)
+            if self._validate_date(date_str):
+                return date_str
+
+        # Check for task with priority: (A) YYYY-MM-DD
+        match = re.match(r"^\([A-Z]\)\s+(\d{4}-\d{2}-\d{2})\s+", line)
+        if match:
+            date_str = match.group(1)
+            if self._validate_date(date_str):
+                return date_str
+
+        # Check for task without priority: YYYY-MM-DD at start
+        match = re.match(r"^(\d{4}-\d{2}-\d{2})\s+", line)
+        if match:
+            date_str = match.group(1)
+            if self._validate_date(date_str):
+                return date_str
+
+        return None
+
+    def _validate_date(self, date_str):
+        """Validate a date string"""
+        try:
+            datetime.strptime(date_str, "%Y-%m-%d")
+            return True
+        except ValueError:
+            return False
+
+    def is_enabled(self):
+        """Only enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")

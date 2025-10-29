@@ -18,5 +18,9 @@
   {
     "caption": "TodoTxt: Sort by Priority",
     "command": "todo_txt_sort_by_priority"
+  },
+  {
+    "caption": "TodoTxt: Sort by Creation Date",
+    "command": "todo_txt_sort_by_creation_date"
   }
 ]
