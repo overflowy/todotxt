@@ -2,7 +2,7 @@
 
 A comprehensive Sublime Text plugin for managing todo.txt files
 
-<img width="2224" height="1738" alt="CleanShot 2025-10-29 at 19 04 33@2x" src="https://github.com/user-attachments/assets/b7d9370b-e72d-4be3-bfd6-216e4b8f62ce" />
+![CleanShot 2025-10-30 at 11 38 17@2x](https://github.com/user-attachments/assets/40a9399d-487a-4144-92f5-e00411434cf3)
 
 ## Features
 
