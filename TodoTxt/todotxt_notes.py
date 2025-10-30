@@ -207,11 +207,11 @@ class TodoTxtNoteHighlighter(sublime_plugin.EventListener):
                 else:
                     missing_regions.append(region)
 
-        # Highlight existing notes with normal underline
+        # Highlight existing notes with green underline
         view.add_regions(
             "note_references_exists",
             existing_regions,
-            scope="entity.name.filename.note.todo",
+            scope="region.greenish",
             flags=sublime.DRAW_NO_FILL | sublime.DRAW_NO_OUTLINE | sublime.DRAW_SOLID_UNDERLINE,
         )
 
