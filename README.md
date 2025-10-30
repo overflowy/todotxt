@@ -43,11 +43,19 @@ A comprehensive Sublime Text plugin for managing todo.txt files
 ### Quick Start
 
 1. Create a new file named `todo.txt`
-2. Press `Ctrl+Shift+Space` to add your first task
-3. Use the command palette (Ctrl+Shift+P) to access all TodoTxt commands
+2. Open the command palette (Ctrl+Shift+P) and type "TodoTxt: Add New Task"
+3. Use the command palette to access all TodoTxt commands (see Keyboard Shortcuts section to enable hotkeys)
 
 ### Keyboard Shortcuts
 
+The plugin includes suggested keyboard shortcuts that are commented out by default to avoid conflicts with other packages. To enable them:
+
+1. Open the command palette (Ctrl+Shift+P)
+2. Type "Preferences: TodoTxt Key Bindings"
+3. Uncomment the desired shortcuts in the left pane
+4. Or copy them to your user key bindings on the right pane
+
+Suggested shortcuts:
 - `Ctrl+Shift+Space` - Add new task
 - `Ctrl+Shift+X` - Toggle task completion
 - `Ctrl+Shift+C` - Increase priority

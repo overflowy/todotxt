@@ -1,22 +1,22 @@
 [
-  {
-    "keys": ["ctrl+shift+space"],
-    "command": "todo_txt_add_new_task",
-    "context": [{ "key": "selector", "operator": "equal", "operand": "text.todo" }]
-  },
-  {
-    "keys": ["ctrl+shift+x"],
-    "command": "todo_txt_toggle_task_completion",
-    "context": [{ "key": "selector", "operator": "equal", "operand": "text.todo" }]
-  },
-  {
-    "keys": ["ctrl+shift+c"],
-    "command": "todo_txt_increase_priority",
-    "context": [{ "key": "selector", "operator": "equal", "operand": "text.todo" }]
-  },
-  {
-    "keys": ["ctrl+shift+z"],
-    "command": "todo_txt_decrease_priority",
-    "context": [{ "key": "selector", "operator": "equal", "operand": "text.todo" }]
-  }
+  // {
+  //   "keys": ["ctrl+shift+space"],
+  //   "command": "todo_txt_add_new_task",
+  //   "context": [{ "key": "selector", "operator": "equal", "operand": "text.todo" }]
+  // },
+  // {
+  //   "keys": ["ctrl+shift+x"],
+  //   "command": "todo_txt_toggle_task_completion",
+  //   "context": [{ "key": "selector", "operator": "equal", "operand": "text.todo" }]
+  // },
+  // {
+  //   "keys": ["ctrl+shift+c"],
+  //   "command": "todo_txt_increase_priority",
+  //   "context": [{ "key": "selector", "operator": "equal", "operand": "text.todo" }]
+  // },
+  // {
+  //   "keys": ["ctrl+shift+z"],
+  //   "command": "todo_txt_decrease_priority",
+  //   "context": [{ "key": "selector", "operator": "equal", "operand": "text.todo" }]
+  // }
 ]
