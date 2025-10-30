@@ -1,0 +1,3 @@
+# Exclude files from Package Control installation
+.gitattributes export-ignore
+.gitignore export-ignore
