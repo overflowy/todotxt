@@ -58,5 +58,13 @@
   {
     "caption": "TodoTxt: Move to Todo",
     "command": "todo_txt_move_to_todo"
+  },
+  {
+    "caption": "Preferences: TodoTxt Key Bindings",
+    "command": "edit_settings",
+    "args": {
+      "base_file": "${packages}/TodoTxt/Default.sublime-keymap",
+      "default": "[\n\t$0\n]\n"
+    }
   }
 ]

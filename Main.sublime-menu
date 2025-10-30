@@ -1,0 +1,25 @@
+[
+  {
+    "id": "preferences",
+    "children": [
+      {
+        "id": "package-settings",
+        "children": [
+          {
+            "caption": "TodoTxt",
+            "children": [
+              {
+                "caption": "Key Bindings",
+                "command": "edit_settings",
+                "args": {
+                  "base_file": "${packages}/TodoTxt/Default.sublime-keymap",
+                  "default": "[\n\t$0\n]\n"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
