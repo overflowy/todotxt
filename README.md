@@ -1,6 +1,6 @@
 # TodoTxt for Sublime Text
 
-A comprehensive Sublime Text plugin for managing todo.txt files.
+A comprehensive Sublime Text plugin for managing todo.txt files
 
 <img width="2224" height="1738" alt="CleanShot 2025-10-29 at 19 04 33@2x" src="https://github.com/user-attachments/assets/b7d9370b-e72d-4be3-bfd6-216e4b8f62ce" />
 
@@ -31,19 +31,12 @@ A comprehensive Sublime Text plugin for managing todo.txt files.
 - **Move to Waiting** - Move tasks to waiting.txt for blocked/waiting items
 - **Move to Todo** - Bring tasks back from someday.txt or waiting.txt to todo.txt
 
-### Visual Features
+### Quality of Life Improvements
 
 - **Due Date Highlighting** - Color-coded due dates (red for past, orange for today, green for future)
 - **Note References** - Hover over `note:filename` to preview note contents
 - **Note Highlighting** - Visual indication of existing vs missing note files
 - **Autocomplete** - Context (@) and project (+) tag suggestions
-
-### Keyboard Shortcuts
-
-- `Ctrl+Shift+Space` - Add new task
-- `Ctrl+Shift+X` - Toggle task completion
-- `Ctrl+Shift+C` - Increase priority
-- `Ctrl+Shift+Z` - Decrease priority
 
 ## Usage
 
@@ -52,6 +45,13 @@ A comprehensive Sublime Text plugin for managing todo.txt files.
 1. Create a new file named `todo.txt`
 2. Press `Ctrl+Shift+Space` to add your first task
 3. Use the command palette (Ctrl+Shift+P) to access all TodoTxt commands
+
+### Keyboard Shortcuts
+
+- `Ctrl+Shift+Space` - Add new task
+- `Ctrl+Shift+X` - Toggle task completion
+- `Ctrl+Shift+C` - Increase priority
+- `Ctrl+Shift+Z` - Decrease priority
 
 ### Task Format
 
@@ -76,21 +76,39 @@ The plugin supports multiple files in the same directory:
 
 All commands are available through the command palette (Ctrl+Shift+P):
 
-- TodoTxt: Add New Task - `todo_txt_add_new_task`
-- TodoTxt: Toggle Task Completion - `todo_txt_toggle_task_completion`
-- TodoTxt: Increase Priority - `todo_txt_increase_priority`
-- TodoTxt: Decrease Priority - `todo_txt_decrease_priority`
-- TodoTxt: Remove Priorities - `todo_txt_remove_priority`
-- TodoTxt: Sort by Context - `todo_txt_sort_by_context`
-- TodoTxt: Sort by Project - `todo_txt_sort_by_project`
-- TodoTxt: Sort by Priority - `todo_txt_sort_by_priority`
-- TodoTxt: Sort by Due Date - `todo_txt_sort_by_due_date`
-- TodoTxt: Sort by Creation Date - `todo_txt_sort_by_creation_date`
-- TodoTxt: Sort by Status - `todo_txt_sort_by_status`
-- TodoTxt: Archive Completed Tasks - `todo_txt_archive_completed`
-- TodoTxt: Move to Someday - `todo_txt_move_to_someday`
-- TodoTxt: Move to Waiting - `todo_txt_move_to_waiting`
-- TodoTxt: Move to Todo - `todo_txt_move_to_todo`
+- TodoTxt: Add New Task - Opens input panel to create a new task with automatic creation date
+- TodoTxt: Toggle Task Completion - Marks selected tasks as complete or incomplete with completion date
+- TodoTxt: Increase Priority - Raises task priority (B→A) or adds (A) if no priority exists
+- TodoTxt: Decrease Priority - Lowers task priority (A→B) or removes priority at (Z)
+- TodoTxt: Remove Priorities - Removes priority markers from selected tasks
+- TodoTxt: Sort by Context - Groups and sorts tasks by @context tags alphabetically
+- TodoTxt: Sort by Project - Groups and sorts tasks by +project tags alphabetically
+- TodoTxt: Sort by Priority - Orders tasks by priority level (A) through (Z), highest first
+- TodoTxt: Sort by Due Date - Orders tasks by due date, earliest first, no date last
+- TodoTxt: Sort by Creation Date - Orders tasks by creation date, earliest first
+- TodoTxt: Sort by Status - Moves all completed tasks to the bottom of the file
+- TodoTxt: Archive Completed Tasks - Moves completed tasks to done.txt and removes from current file
+- TodoTxt: Move to Someday - Moves selected tasks to someday.txt for future consideration
+- TodoTxt: Move to Waiting - Moves selected tasks to waiting.txt for blocked items
+- TodoTxt: Move to Todo - Moves selected tasks from someday.txt or waiting.txt back to todo.txt
+
+You can add custom keyboard shortcuts for any command by editing your Sublime Text key bindings. Use these command names:
+
+- `todo_txt_add_new_task`
+- `todo_txt_toggle_task_completion`
+- `todo_txt_increase_priority`
+- `todo_txt_decrease_priority`
+- `todo_txt_remove_priority`
+- `todo_txt_sort_by_context`
+- `todo_txt_sort_by_project`
+- `todo_txt_sort_by_priority`
+- `todo_txt_sort_by_due_date`
+- `todo_txt_sort_by_creation_date`
+- `todo_txt_sort_by_status`
+- `todo_txt_archive_completed`
+- `todo_txt_move_to_someday`
+- `todo_txt_move_to_waiting`
+- `todo_txt_move_to_todo`
 
 ## License
 
