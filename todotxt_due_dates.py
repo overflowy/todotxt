@@ -38,6 +38,13 @@ class TodoTxtDueDateHighlighter(sublime_plugin.EventListener):
         future_regions = []
 
         for region in regions:
+            # Check if the task is completed (line starts with "x ")
+            line = view.line(region)
+            line_text = view.substr(line).lstrip()
+            if line_text.startswith("x "):
+                # Skip completed tasks
+                continue
+
             text = view.substr(region)
             match = re.match(due_pattern, text)
             if match:
