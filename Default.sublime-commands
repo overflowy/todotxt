@@ -60,6 +60,10 @@
     "command": "todo_txt_move_to_todo"
   },
   {
+    "caption": "TodoTxt: Generate Dashboard",
+    "command": "todo_txt_generate_dashboard"
+  },
+  {
     "caption": "Preferences: TodoTxt Key Bindings",
     "command": "edit_settings",
     "args": {

@@ -849,3 +849,55 @@ class TodoTxtMoveToTodoCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         """Enable in todo.txt files (someday.txt, waiting.txt, etc.)"""
         return self.view.match_selector(0, "text.todo")
+
+
+class TodoTxtGenerateDashboardCommand(sublime_plugin.TextCommand):
+    """Generate HTML dashboard from todo.txt files"""
+
+    def run(self, edit):
+        view = self.view
+
+        # Get the current file path
+        current_file = view.file_name()
+        if not current_file:
+            sublime.status_message("TodoTxt: Please save the file first")
+            return
+
+        # Get the directory containing the todo.txt files
+        todo_dir = os.path.dirname(current_file)
+
+        # Run dashboard generation in a background thread to avoid blocking UI
+        sublime.status_message("TodoTxt: Generating dashboard...")
+        self._generate_dashboard(todo_dir)
+
+    def _generate_dashboard(self, todo_dir):
+        """Generate the dashboard (runs in background thread)"""
+        try:
+            # Import dashboard generation module using older Python approach
+            import imp
+
+            plugin_dir = os.path.dirname(os.path.abspath(__file__))
+
+            # Load the module using imp (compatible with older Python)
+            script_path = os.path.join(plugin_dir, "todotxt-html.py")
+            dashboard = imp.load_source("todotxt_html", script_path)
+
+            # Generate the dashboard
+            dashboard.generate_dashboard(todo_dir, open_browser=True)
+
+            # Show success message in the main thread
+            sublime.set_timeout(
+                lambda: sublime.status_message("TodoTxt: Dashboard opened in browser"), 0
+            )
+
+        except Exception as e:
+            # Show error message in the main thread
+            error_msg = "TodoTxt: Error generating dashboard\n{0}".format(str(e))
+            sublime.set_timeout(
+                lambda: sublime.error_message(error_msg),
+                0,
+            )
+
+    def is_enabled(self):
+        """Enable in todo.txt files"""
+        return self.view.match_selector(0, "text.todo")
