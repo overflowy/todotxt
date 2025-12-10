@@ -312,6 +312,7 @@ def calculate_statistics(tasks_by_file):
         "priority_distribution": count_by_priority(active_tasks),
         "context_breakdown": count_by_context(active_tasks),
         "project_breakdown": count_by_project(active_tasks),
+        "project_breakdown_completed": count_by_project(completed_tasks),
         "due_date_analysis": analyze_due_dates(active_tasks, today),
         "completion_trends": analyze_completion_trends(completed_tasks),
         "task_age": analyze_task_age(active_tasks, today),
@@ -1699,25 +1700,35 @@ def generate_priority_chart(stats):
     return '<div class="bar-chart">{0}</div>'.format("".join(bars))
 
 
-def generate_tag_cloud(items, tag_class, prefix, total_tasks):
+def generate_tag_cloud(
+    items, tag_class, prefix, total_tasks, filter_type=None, elem_id=None, hidden=False
+):
     """Generate tag cloud for contexts or projects with tooltips"""
+
+    # Defaults
+    if filter_type is None:
+        filter_type = tag_class
+
+    wrapper_style = ' style="display:none"' if hidden else ""
+    wrapper_id = ' id="{0}"'.format(elem_id) if elem_id else ""
+
     if not items:
         icon = "at-sign" if tag_class == "context" else "folder"
-        return '<div class="empty-state"><i data-lucide="{0}"></i>No {1}s found</div>'.format(
-            icon, tag_class
+        return '<div class="empty-state"{0}{1}><i data-lucide="{2}"></i>No {3}s found</div>'.format(
+            wrapper_id, wrapper_style, icon, tag_class
         )
 
     # Sort by count descending, then alphabetically
     sorted_items = sorted(items.items(), key=lambda x: (-x[1], x[0]))
-    tag_type_name = "context" if tag_class == "context" else "project"
 
     tags = []
     for i, (name, count) in enumerate(sorted_items[:20]):  # Limit to top 20
         pct = round((count / total_tasks * 100) if total_tasks > 0 else 0)
         task_plural = "s" if count != 1 else ""
-        tooltip_text = "{0} task{1} with this {2} ({3}% of active)".format(
-            count, task_plural, tag_type_name, pct
-        )
+
+        # Adjust tooltip text based on if we are looking at completed or active
+        state_text = "completed" if "completed" in filter_type else "active"
+        tooltip_text = "{0} {1} task{2} ({3}%)".format(count, state_text, task_plural, pct)
         delay = i * 0.05
 
         tags.append(
@@ -1728,11 +1739,20 @@ def generate_tag_cloud(items, tag_class, prefix, total_tasks):
             <div class="tag-tooltip">{9} - Click to view</div>
         </div>
         """.format(
-                tag_class, delay, tag_class, name, prefix, name, prefix, name, count, tooltip_text
+                tag_class,
+                delay,
+                filter_type,
+                name,
+                prefix,
+                name,
+                prefix,
+                name,
+                count,
+                tooltip_text,
             )
         )
 
-    return '<div class="tag-cloud">{0}</div>'.format("".join(tags))
+    return '<div class="tag-cloud"{0}{1}>{2}</div>'.format(wrapper_id, wrapper_style, "".join(tags))
 
 
 def generate_due_date_timeline(stats):
@@ -1920,14 +1940,37 @@ def generate_html(stats):
     css = generate_css()
     timestamp = stats["generated_at"].strftime("%B %d, %Y at %I:%M %p")
     total_active = stats["total_active"]
+    total_completed = stats["total_completed"]
 
     # Generate task JSON for modal
     task_json = tasks_to_json(stats["all_tasks"])
 
     overview_cards = generate_overview_cards(stats)
     priority_chart = generate_priority_chart(stats)
+
+    # Generate Clouds
     context_cloud = generate_tag_cloud(stats["context_breakdown"], "context", "@", total_active)
-    project_cloud = generate_tag_cloud(stats["project_breakdown"], "project", "+", total_active)
+
+    # Generate TWO project clouds (Active and Completed)
+    project_cloud_active = generate_tag_cloud(
+        stats["project_breakdown"],
+        "project",
+        "+",
+        total_active,
+        filter_type="project",
+        elem_id="projects-active",
+    )
+
+    project_cloud_completed = generate_tag_cloud(
+        stats["project_breakdown_completed"],
+        "project",
+        "+",
+        total_completed,
+        filter_type="project-completed",
+        elem_id="projects-completed",
+        hidden=True,
+    )
+
     due_timeline = generate_due_date_timeline(stats)
     completion_chart = generate_completion_chart(stats)
     monthly_overview = generate_monthly_overview(stats)
@@ -1935,7 +1978,8 @@ def generate_html(stats):
 
     # Count unique contexts and projects
     context_count = len(stats["context_breakdown"])
-    project_count = len(stats["project_breakdown"])
+    project_count_active = len(stats["project_breakdown"])
+    project_count_completed = len(stats["project_breakdown_completed"])
 
     modal_js = """
     const tasks = window.TASKS_DATA;
@@ -1985,6 +2029,9 @@ def generate_html(stats):
                     return !task.completed && task.contexts.includes(filterValue);
                 case "project":
                     return !task.completed && task.projects.includes(filterValue);
+                case "project-completed":
+                    // NEW: Filter for completed tasks in a specific project
+                    return task.completed && task.projects.includes(filterValue);
                 case "age-today":
                     return !task.completed && task.creation_date === today;
                 case "age-week":
@@ -2083,6 +2130,35 @@ def generate_html(stats):
             openModal(title, filterType, filterValue);
         });
     });
+
+    // Project Toggle Logic
+    const projectToggle = document.getElementById('project-toggle');
+    if (projectToggle) {
+        projectToggle.addEventListener('click', () => {
+            const activeCloud = document.getElementById('projects-active');
+            const completedCloud = document.getElementById('projects-completed');
+            const isShowingActive = activeCloud.style.display !== 'none';
+
+            const activeCount = projectToggle.dataset.activeCount;
+            const completedCount = projectToggle.dataset.completedCount;
+
+            if (isShowingActive) {
+                // Switch to Completed
+                activeCloud.style.display = 'none';
+                completedCloud.style.display = 'flex'; // tag-cloud is flex
+                projectToggle.innerHTML = completedCount + " completed";
+                projectToggle.style.color = "var(--accent-emerald)";
+                projectToggle.style.borderColor = "var(--accent-emerald)";
+            } else {
+                // Switch to Active
+                completedCloud.style.display = 'none';
+                activeCloud.style.display = 'flex';
+                projectToggle.innerHTML = activeCount + " active";
+                projectToggle.style.color = ""; // Reset to CSS default
+                projectToggle.style.borderColor = "";
+            }
+        });
+    }
     """
 
     return """<!DOCTYPE html>
@@ -2141,9 +2217,10 @@ def generate_html(stats):
             <div class="section" style="animation-delay: 0.55s">
                 <div class="section-header">
                     <h2 class="section-title"><span class="icon"><i data-lucide="folder"></i></span>Projects</h2>
-                    <span class="section-badge">{8} active</span>
+                    <span class="section-badge clickable" id="project-toggle" data-active-count="{8}" data-completed-count="{9}">{8} active</span>
                 </div>
-                {9}
+                {10}
+                {11}
             </div>
         </div>
 
@@ -2152,7 +2229,7 @@ def generate_html(stats):
                 <h2 class="section-title"><span class="icon"><i data-lucide="trending-up"></i></span>Completion Trends</h2>
                 <span class="section-badge">Last 14 days</span>
             </div>
-            {10}
+            {12}
         </div>
 
         <div class="section" style="animation-delay: 0.65s">
@@ -2160,11 +2237,10 @@ def generate_html(stats):
                 <h2 class="section-title"><span class="icon"><i data-lucide="calendar-range"></i></span>Monthly Overview</h2>
                 <span class="section-badge">Last 6 months</span>
             </div>
-            {11}
+            {13}
         </div>
     </div>
 
-    <!-- Modal -->
     <div class="modal-overlay" id="modalOverlay"></div>
     <div class="modal" id="taskModal">
         <div class="modal-header">
@@ -2180,9 +2256,9 @@ def generate_html(stats):
     </div>
 
     <script>
-        window.TASKS_DATA = {12};
+        window.TASKS_DATA = {14};
         lucide.createIcons();
-        {13}
+        {15}
     </script>
 </body>
 </html>""".format(
@@ -2194,8 +2270,10 @@ def generate_html(stats):
         age_section,
         context_count,
         context_cloud,
-        project_count,
-        project_cloud,
+        project_count_active,
+        project_count_completed,
+        project_cloud_active,
+        project_cloud_completed,
         completion_chart,
         monthly_overview,
         task_json,
