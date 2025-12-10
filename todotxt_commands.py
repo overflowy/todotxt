@@ -879,7 +879,7 @@ class TodoTxtGenerateDashboardCommand(sublime_plugin.TextCommand):
             plugin_dir = os.path.dirname(os.path.abspath(__file__))
 
             # Load the module using imp (compatible with older Python)
-            script_path = os.path.join(plugin_dir, "todotxt-html.py")
+            script_path = os.path.join(plugin_dir, "todotxt_html.py")
             dashboard = imp.load_source("todotxt_html", script_path)
 
             # Generate the dashboard

@@ -119,6 +119,12 @@ def parse_task(line, source_file):
     description = re.sub(r"^\([A-Z]\)\s+", "", description)
     # Remove creation date
     description = re.sub(r"^\d{4}-\d{2}-\d{2}\s+", "", description)
+    # Remove contexts, projects and due dates
+    description = CONTEXT_PATTERN.sub("", description)
+    description = PROJECT_PATTERN.sub("", description)
+    description = DUE_DATE_PATTERN.sub("", description)
+    # Clean up whitespace (double spaces left by removals)
+    description = re.sub(r"\s+", " ", description).strip()
 
     return Task(
         raw_line=line,
@@ -234,7 +240,8 @@ def analyze_completion_trends(completed_tasks, days=14):
         if day not in result:
             result[day] = 0
 
-    return dict(sorted(result.items()))
+    # Sort reverse=True so Today is first (Left side of chart)
+    return dict(sorted(result.items(), reverse=True))
 
 
 def analyze_task_age(tasks, today):
@@ -754,6 +761,7 @@ body::after {
 }
 
 .bar-row {
+    position: relative; /* Ensure tooltips are relative to the row, but see z-index */
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -765,6 +773,7 @@ body::after {
 
 .bar-row:hover {
     background: var(--bg-card);
+    z-index: 10; /* Bring to front on hover */
 }
 
 .bar-label {
@@ -951,16 +960,6 @@ body::after {
     color: var(--text-primary);
 }
 
-.tag-tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: var(--border-accent);
-}
-
 .tag:hover .tag-tooltip {
     opacity: 1;
     transform: translateX(-50%) scale(1);
@@ -1026,6 +1025,7 @@ body::after {
     transform: scaleY(1.05);
     filter: brightness(1.15);
     box-shadow: 0 -8px 24px var(--accent-emerald-glow);
+    z-index: 10;
 }
 
 .trend-bar-tooltip {
@@ -1396,7 +1396,7 @@ body::after {
 }
 
 .task-item.completed .task-description {
-    color: var(--text-muted);
+    color: gray;
 }
 
 .task-meta {
@@ -1594,7 +1594,7 @@ def generate_overview_cards(stats):
 
     danger_class = " danger" if overdue_count > 0 else ""
     warning_class = " warning" if today_count > 0 else ""
-    overdue_context = "Click to view overdue tasks" if overdue_count > 0 else "All caught up!"
+    overdue_context = "Overdue tasks" if overdue_count > 0 else "All caught up!"
 
     return """
     <div class="cards-grid">
@@ -1602,13 +1602,13 @@ def generate_overview_cards(stats):
             <div class="card-icon"><i data-lucide="list-todo"></i></div>
             <div class="card-value">{0}</div>
             <div class="card-label">Active Tasks</div>
-            <div class="card-context">Click to view all active tasks</div>
+            <div class="card-context">View active tasks</div>
         </div>
         <div class="card success clickable" data-filter="completed" data-title="Completed Tasks">
             <div class="card-icon"><i data-lucide="circle-check"></i></div>
             <div class="card-value">{1}</div>
             <div class="card-label">Completed</div>
-            <div class="card-context">Click to view completed tasks</div>
+            <div class="card-context">View completed tasks</div>
         </div>
         <div class="card{2} clickable" data-filter="overdue" data-title="Overdue Tasks">
             <div class="card-icon"><i data-lucide="alert-triangle"></i></div>
@@ -1620,7 +1620,7 @@ def generate_overview_cards(stats):
             <div class="card-icon"><i data-lucide="clock"></i></div>
             <div class="card-value">{6}</div>
             <div class="card-label">Due Today</div>
-            <div class="card-context">Click to view tasks due today</div>
+            <div class="card-context">View tasks due today</div>
         </div>
     </div>
     """.format(
@@ -1652,9 +1652,9 @@ def generate_priority_chart(stats):
     max_count = max(priority_dist.values()) if priority_dist else 1
 
     priority_descriptions = {
-        "A": "Critical - Must be done ASAP",
-        "B": "Important - Should be done soon",
-        "C": "Normal - Can wait if needed",
+        "A": "Critical priority",
+        "B": "Important priority",
+        "C": "Normal priority",
         "None": "No priority assigned",
     }
 
@@ -1680,7 +1680,7 @@ def generate_priority_chart(stats):
                 </div>
             </div>
             <div class="bar-count">{7}</div>
-            <div class="bar-tooltip">{8}<br><strong>{9} task{10}</strong> - Click to view</div>
+            <div class="bar-tooltip">{8}<br><strong>{9} task{10}</strong></div>
         </div>
         """.format(
                 priority_class,
@@ -1736,7 +1736,7 @@ def generate_tag_cloud(
         <div class="tag tag-{0} clickable" style="animation-delay: {1}s" data-filter="{2}" data-value="{3}" data-title="{4}{5}">
             {6}{7}
             <span class="tag-count">{8}</span>
-            <div class="tag-tooltip">{9} - Click to view</div>
+            <div class="tag-tooltip">{9}</div>
         </div>
         """.format(
                 tag_class,
@@ -1774,7 +1774,6 @@ def generate_due_date_timeline(stats):
         <div class="timeline-item {0} clickable" data-filter="{1}" data-title="{2}">
             <div class="timeline-count">{3}</div>
             <div class="timeline-label">{4}</div>
-            <div class="timeline-hint">Click to view</div>
         </div>
         """.format(css_class, filter_type, title, count, label)
         )
@@ -1792,11 +1791,13 @@ def generate_completion_chart(stats):
     max_count = max(trends.values()) if trends else 1
 
     bars = []
+    # trends is sorted Today -> Past due to analyze_completion_trends change
     for i, (task_date, count) in enumerate(trends.items()):
         height_percent = (count / max_count * 100) if max_count > 0 else 0
         # Ensure minimum visible height for days with completions
         display_height = max(height_percent, 4) if count > 0 else 4
-        date_str = task_date.strftime("%m/%d")
+        date_str = task_date.strftime("%d/%m")  # Requested DD/MM format
+        iso_date = task_date.isoformat()
         day_name = task_date.strftime("%a")
         full_date = task_date.strftime("%B %d, %Y")
 
@@ -1807,16 +1808,26 @@ def generate_completion_chart(stats):
             """
         <div class="trend-bar-container">
             <div class="trend-bar-wrapper">
-                <div class="trend-bar" style="height: {0}%; animation-delay: {1}s">
+                <div class="trend-bar clickable" style="height: {0}%; animation-delay: {1}s" data-filter="completion-date" data-value="{2}" data-title="Completed on {3}">
                     <div class="trend-bar-tooltip">
-                        <div>{2}</div>
-                        <div><span class="trend-bar-count">{3}</span> task{4} completed</div>
+                        <div>{4}</div>
+                        <div><span class="trend-bar-count">{5}</span> task{6} completed</div>
                     </div>
                 </div>
             </div>
-            <div class="trend-date">{5}<br>{6}</div>
+            <div class="trend-date">{7}<br>{8}</div>
         </div>
-        """.format(display_height, delay, full_date, count, task_plural, day_name, date_str)
+        """.format(
+                display_height,
+                delay,
+                iso_date,
+                full_date,
+                full_date,
+                count,
+                task_plural,
+                day_name,
+                date_str,
+            )
         )
 
     return '<div class="trend-chart">{0}</div>'.format("".join(bars))
@@ -1915,7 +1926,7 @@ def generate_task_age_section(stats):
                 </div>
             </div>
             <div class="bar-count">{7}</div>
-            <div class="bar-tooltip">{8}<br><strong>{9} task{10}</strong> - Click to view</div>
+            <div class="bar-tooltip">{8}<br><strong>{9} task{10}</strong></div>
         </div>
         """.format(
                 css_class,
@@ -2032,6 +2043,8 @@ def generate_html(stats):
                 case "project-completed":
                     // NEW: Filter for completed tasks in a specific project
                     return task.completed && task.projects.includes(filterValue);
+                case "completion-date":
+                    return task.completed && task.completion_date === filterValue;
                 case "age-today":
                     return !task.completed && task.creation_date === today;
                 case "age-week":
@@ -2123,7 +2136,9 @@ def generate_html(stats):
     });
 
     document.querySelectorAll("[data-filter]").forEach(el => {
-        el.addEventListener("click", () => {
+        el.addEventListener("click", (e) => {
+            // Check if the clicked element or its parent (for bubbled events) has the data-filter
+            // In case of trend bars, the listener is on the bar, so 'el' is correct.
             const filterType = el.dataset.filter;
             const filterValue = el.dataset.value || "";
             const title = el.dataset.title || "Tasks";
