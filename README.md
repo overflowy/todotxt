@@ -24,6 +24,14 @@ A comprehensive Sublime Text plugin for managing todo.txt files
 - **Sort by Creation Date** - Order by task creation dates
 - **Sort by Status** - Move completed tasks to bottom
 
+### Visual Dashboard
+
+- **HTML Report Generator** - Generates a beautiful, interactive HTML dashboard from your task files
+- **Interactive Stats** - View active vs. completed counts, overdue tasks, and priorities
+- **Smart Filtering** - Click on any chart bar, tag, or timeline item to view specific tasks in a modal
+- **Project Insights** - Click the "Active" badge on the Projects card to toggle between **Active** and **Completed** projects
+- **Trend Analysis** - Visualize completion trends over the last 14 days and monthly history
+
 ### Task Movement
 
 - **Archive Completed Tasks** - Move completed tasks to done.txt
@@ -56,6 +64,7 @@ The plugin includes suggested keyboard shortcuts that are commented out by defau
 4. Or copy them to your user key bindings on the right pane
 
 Suggested shortcuts:
+
 - `Ctrl+Shift+Space` - Add new task
 - `Ctrl+Shift+X` - Toggle task completion
 - `Ctrl+Shift+C` - Increase priority
@@ -86,6 +95,7 @@ All commands are available through the command palette (Ctrl+Shift+P):
 
 - TodoTxt: Add New Task - Opens input panel to create a new task with automatic creation date
 - TodoTxt: Toggle Task Completion - Marks selected tasks as complete or incomplete with completion date
+- TodoTxt: Generate Dashboard - Generates and opens an HTML dashboard with stats and charts
 - TodoTxt: Increase Priority - Raises task priority (B→A) or adds (A) if no priority exists
 - TodoTxt: Decrease Priority - Lowers task priority (A→B) or removes priority at (Z)
 - TodoTxt: Remove Priorities - Removes priority markers from selected tasks
@@ -104,6 +114,7 @@ You can add custom keyboard shortcuts for any command by editing your Sublime Te
 
 - `todo_txt_add_new_task`
 - `todo_txt_toggle_task_completion`
+- `todo_txt_generate_dashboard`
 - `todo_txt_increase_priority`
 - `todo_txt_decrease_priority`
 - `todo_txt_remove_priority`
