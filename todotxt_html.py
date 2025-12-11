@@ -43,9 +43,9 @@ Task = namedtuple(
 # REGEX PATTERNS (from todotxt_commands.py patterns)
 # ============================================================================
 
-COMPLETED_PATTERN = re.compile(r"^x\s+(\d{4}-\d{2}-\d{2})\s+")
-COMPLETED_WITH_CREATION_PATTERN = re.compile(r"^x\s+\d{4}-\d{2}-\d{2}\s+(\d{4}-\d{2}-\d{2})\s+")
-PRIORITY_PATTERN = re.compile(r"^(?:x\s+\d{4}-\d{2}-\d{2}\s+)?\(([A-Z])\)\s+")
+COMPLETED_PATTERN = re.compile(r"^x\s+(?:\([A-Z]\)\s+)?(\d{4}-\d{2}-\d{2})\s+")
+COMPLETED_WITH_CREATION_PATTERN = re.compile(r"^x\s+(?:\([A-Z]\)\s+)?\d{4}-\d{2}-\d{2}\s+(\d{4}-\d{2}-\d{2})\s+")
+PRIORITY_PATTERN = re.compile(r"^(?:x\s+)?\(([A-Z])\)\s+")
 CONTEXT_PATTERN = re.compile(r"(?:^|\s)@(\S+)")
 PROJECT_PATTERN = re.compile(r"(?:^|\s)\+(\S+)")
 DUE_DATE_PATTERN = re.compile(r"\bdue:(\d{4}-\d{2}-\d{2})\b")
@@ -112,9 +112,9 @@ def parse_task(line, source_file):
 
     # Extract description (clean up metadata for display)
     description = line
-    # Remove completion marker
+    # Remove completion marker (with optional priority)
     if description.startswith("x "):
-        description = re.sub(r"^x\s+\d{4}-\d{2}-\d{2}\s+", "", description)
+        description = re.sub(r"^x\s+(?:\([A-Z]\)\s+)?\d{4}-\d{2}-\d{2}\s+", "", description)
     # Remove priority
     description = re.sub(r"^\([A-Z]\)\s+", "", description)
     # Remove creation date

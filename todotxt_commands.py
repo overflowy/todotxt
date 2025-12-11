@@ -50,14 +50,36 @@ class TodoTxtToggleTaskCompletionCommand(sublime_plugin.TextCommand):
 
                 # If already completed, uncomplete it
                 if stripped.startswith("x "):
-                    # Remove "x YYYY-MM-DD " from the beginning
-                    # Match "x " followed by optional date and space
-                    uncompleted = re.sub(r"^(\s*)x\s+(?:\d{4}-\d{2}-\d{2}\s+)?", r"\1", line_text)
+                    # Remove "x " and completion date, but keep priority if present
+                    # x (A) 2025-12-11 2025-10-01 task -> (A) 2025-10-01 task
+                    # x 2025-12-11 2025-10-01 task -> 2025-10-01 task
+                    # Check if there's a priority
+                    if re.match(r"^(\s*)x\s+\([A-Z]\)\s+", line_text):
+                        # Has priority: keep it
+                        uncompleted = re.sub(
+                            r"^(\s*)x\s+(\([A-Z]\)\s+)(?:\d{4}-\d{2}-\d{2}\s+)?", r"\1\2", line_text
+                        )
+                    else:
+                        # No priority: just remove x and date
+                        uncompleted = re.sub(
+                            r"^(\s*)x\s+(?:\d{4}-\d{2}-\d{2}\s+)?", r"\1", line_text
+                        )
                     view.replace(edit, line, uncompleted)
                 else:
-                    # Add completion marker at the beginning of the line
-                    completion_prefix = "x {0} ".format(today)
-                    view.insert(edit, line.begin(), completion_prefix)
+                    # Check if task has a priority at the beginning
+                    priority_match = re.match(r"^(\s*)(\([A-Z]\)\s+)(.*)", line_text)
+
+                    if priority_match:
+                        # Task has priority: format as "x (A) YYYY-MM-DD rest"
+                        indent = priority_match.group(1)
+                        priority = priority_match.group(2)
+                        rest = priority_match.group(3)
+                        new_text = "{0}x {1}{2} {3}".format(indent, priority, today, rest)
+                        view.replace(edit, line, new_text)
+                    else:
+                        # No priority: format as "x YYYY-MM-DD task"
+                        completion_prefix = "x {0} ".format(today)
+                        view.insert(edit, line.begin(), completion_prefix)
 
     def is_enabled(self):
         """Only enable in todo.txt files"""
@@ -311,8 +333,8 @@ class TodoTxtSortByPriorityCommand(sublime_plugin.TextCommand):
     def _extract_priority(self, line):
         """Extract the priority (A) through (Z) from a line, or None if none"""
         # Priority format in todo.txt: (A) at the beginning of the line
-        # Can be after completion marker: x 2025-10-29 (A) task
-        match = re.match(r"^(?:x\s+\d{4}-\d{2}-\d{2}\s+)?\(([A-Z])\)\s+", line)
+        # Can be after completion marker: x (A) 2025-10-29 task
+        match = re.match(r"^(?:x\s+)?\(([A-Z])\)\s+", line)
         if match:
             return match.group(1)
         return None
@@ -361,10 +383,11 @@ class TodoTxtSortByCreationDateCommand(sublime_plugin.TextCommand):
         # Creation date formats in todo.txt:
         # - (A) 2025-10-29 task (with priority)
         # - 2025-10-29 task (without priority)
+        # - x (A) 2025-10-29 2025-10-15 task (completed with priority, completion then creation)
         # - x 2025-10-29 2025-10-15 task (completed, completion date then creation date)
 
-        # Check for completed task: x YYYY-MM-DD YYYY-MM-DD
-        match = re.match(r"^x\s+\d{4}-\d{2}-\d{2}\s+(\d{4}-\d{2}-\d{2})\s+", line)
+        # Check for completed task: x (optional priority) YYYY-MM-DD YYYY-MM-DD
+        match = re.match(r"^x\s+(?:\([A-Z]\)\s+)?\d{4}-\d{2}-\d{2}\s+(\d{4}-\d{2}-\d{2})\s+", line)
         if match:
             date_str = match.group(1)
             if self._validate_date(date_str):
@@ -527,8 +550,8 @@ class TodoTxtRemovePriorityCommand(sublime_plugin.TextCommand):
 
                 # Remove priority if it exists
                 # Priority format: (A) at the beginning or after completion marker
-                # Patterns: "(A) task" or "x 2025-10-29 (A) task"
-                new_text = re.sub(r"^((?:x\s+\d{4}-\d{2}-\d{2}\s+)?)\([A-Z]\)\s+", r"\1", line_text)
+                # Patterns: "(A) task" or "x (A) 2025-10-29 task"
+                new_text = re.sub(r"^((?:x\s+)?)\([A-Z]\)\s+", r"\1", line_text)
 
                 # Only replace if something changed
                 if new_text != line_text:
@@ -560,7 +583,7 @@ class TodoTxtIncreasePriorityCommand(sublime_plugin.TextCommand):
 
                 # Check if task has a priority
                 # Pattern: (A) at the beginning or after completion marker
-                match = re.match(r"^((?:x\s+\d{4}-\d{2}-\d{2}\s+)?)\(([A-Z])\)\s+(.*)$", line_text)
+                match = re.match(r"^((?:x\s+)?)\(([A-Z])\)\s+(.*)$", line_text)
 
                 if match:
                     # Task has priority, increase it (A is highest, Z is lowest)
@@ -575,10 +598,11 @@ class TodoTxtIncreasePriorityCommand(sublime_plugin.TextCommand):
                         view.replace(edit, line, new_text)
                 else:
                     # No priority, add (A) priority
-                    # Check if it's a completed task or has creation date
-                    completion_match = re.match(r"^(x\s+\d{4}-\d{2}-\d{2}\s+)", line_text)
+                    # Check if it's a completed task
+                    completion_match = re.match(r"^(x\s+)", line_text)
                     if completion_match:
-                        # Completed task: x 2025-10-29 (A) task
+                        # Completed task: insert priority after x marker
+                        # x 2025-10-29 task -> x (A) 2025-10-29 task
                         prefix = completion_match.group(1)
                         rest = line_text[len(prefix) :]
                         new_text = "{0}(A) {1}".format(prefix, rest)
@@ -614,7 +638,7 @@ class TodoTxtDecreasePriorityCommand(sublime_plugin.TextCommand):
 
                 # Check if task has a priority
                 # Pattern: (A) at the beginning or after completion marker
-                match = re.match(r"^((?:x\s+\d{4}-\d{2}-\d{2}\s+)?)\(([A-Z])\)\s+(.*)$", line_text)
+                match = re.match(r"^((?:x\s+)?)\(([A-Z])\)\s+(.*)$", line_text)
 
                 if match:
                     # Task has priority, decrease it (A -> B, B -> C, etc.)
