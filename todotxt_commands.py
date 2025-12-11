@@ -5,6 +5,8 @@ from datetime import datetime
 import sublime
 import sublime_plugin
 
+from . import todotxt_html
+
 DONE_FILE = "done.txt"
 WAITING_FILE = "waiting.txt"
 SOMEDAY_FILE = "someday.txt"
@@ -873,17 +875,8 @@ class TodoTxtGenerateDashboardCommand(sublime_plugin.TextCommand):
     def _generate_dashboard(self, todo_dir):
         """Generate the dashboard (runs in background thread)"""
         try:
-            # Import dashboard generation module using older Python approach
-            import imp
-
-            plugin_dir = os.path.dirname(os.path.abspath(__file__))
-
-            # Load the module using imp (compatible with older Python)
-            script_path = os.path.join(plugin_dir, "todotxt_html.py")
-            dashboard = imp.load_source("todotxt_html", script_path)
-
             # Generate the dashboard
-            dashboard.generate_dashboard(todo_dir, open_browser=True)
+            todotxt_html.generate_dashboard(todo_dir, open_browser=True)
 
             # Show success message in the main thread
             sublime.set_timeout(
